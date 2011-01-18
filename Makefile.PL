@@ -8,6 +8,7 @@ requires 'File::Find::Rule';
 requires 'File::Spec';
 requires 'Log::Dispatch';
 requires 'Pod::Simple::Text';
+requires 'DateTime';
 
 tests 't/*.t';
 author_tests 'xt';
@@ -18,6 +19,7 @@ auto_include;
 
 install_script 'bin/cpanbaker';
 
-readme_markdown_from 'lib/App/cpanbaker.pm';
+# readme_markdown_from 'lib/App/cpanbaker.pm';
+readme_markdown_from 'bin/cpanbaker';
 
 WriteAll;

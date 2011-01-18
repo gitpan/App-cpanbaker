@@ -1,7 +1,7 @@
 package App::cpanbaker;
 use strict;
 use warnings;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 1;
 __END__
@@ -23,14 +23,9 @@ cpanminus, minicpan configs.
 
 And cpanbaker also detects perlbrew, local::lib directories to backup.
 
-To back up your whole cpan stuff:
+=head1 USAGE
 
-    $ cpanbaker
-
-=head1 OPTIONS
-
-
-
+Please check the documentation of L<bin/cpanbaker>.
 
 =head1 AUTHOR
 
