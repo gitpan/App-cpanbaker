@@ -1,7 +1,7 @@
 package App::cpanbaker;
 use strict;
 use warnings;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 1;
 __END__
@@ -22,6 +22,15 @@ cpanbaker not only backup module files , also script files and cpan, cpanplus,
 cpanminus, minicpan configs.
 
 And cpanbaker also detects perlbrew, local::lib directories to backup.
+
+=head1 SUPPORTS
+
+    * script files
+    * perlbrew.
+    * local::lib.
+    * inc path.
+    * minicpan
+    * cpan, cpanplus, cpanm config directories.
 
 =head1 USAGE
 
