@@ -20,6 +20,7 @@ no_index:
     - xt
 requires:
   DateTime: 0
+  ExtUtils::Installed: 0
   File::Find::Rule: 0
   File::Spec: 0
   Getopt::Long: 0
@@ -29,4 +30,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://github.com/c9s/App-cpanbaker.git
-version: 0.04
+version: 0.05
