@@ -18,9 +18,13 @@ my $opt_include_parts = "";
 my $opt_logfile;
 my $opt_debug;
 my $opt_sudo;
+
 my $opt_gzip;
+my $opt_bzip;
+
 my $opt_help;
 my $opt_dry;
+my $opt_extract;
 
 my $opt_skip_pods;
 my $opt_skip_manpages;
@@ -33,12 +37,16 @@ my $opt_result = GetOptions(
     "v|verbose"     => \$opt_verbose,
     "vv"            => \$opt_very_verbose,
     "d|debug"       => \$opt_debug,
+
     "z|gz"          => \$opt_gzip,
+    "j|bz"          => \$opt_bzip,
+
     "h|help"        => \$opt_help,
     "sudo"          => \$opt_sudo,
-    "skip-pods"      => \$opt_skip_pods,
+    "skip-pods"     => \$opt_skip_pods,
     "skip-manpages" => \$opt_skip_manpages,
     "dry"           => \$opt_dry,
+    "x|extract"     => \$opt_extract,
 );
 
 $opt_verbose ||= $opt_very_verbose;
@@ -52,6 +60,19 @@ if( $opt_help ) {
 }
 
 my $filename = shift;
+
+unless( $filename ) {
+    print "To show help message, please use -h option.\n";
+}
+
+if( $opt_extract ) {
+    unless ( $filename ) {
+        die('Please specify filename');
+    }
+    my @cmd = ( "tar", "xpf", $filename , "-C /");
+    exit(0);
+}
+
 
 if( $opt_installed ) {
 
@@ -180,7 +201,22 @@ sub backup_locallib {
 }
 
 sub backup_manpages {
-    return ();
+    my $manpath = qx(man -w)
+    $logger->info( "Found manpages path: $manpath\n" );
+
+    my @paths = split /:/,$manpath;
+    my @manfiles = ();
+    for my $p ( @paths ) {
+        my @files = File::Find::Rule->file( "*.3" )->in( $p );
+        for( @files ) {
+            open my $fh, "<", $_;
+            my $firstline = <$fh>;
+            close my $fh;
+
+            push @manfiles , $_ if $firstline =~ /Pod::/;
+        }
+    }
+    return @manfiles;
 }
 
 sub backup_libs {
@@ -224,10 +260,8 @@ for my $part ( keys %include_parts ) {
     push @tar_paths, @paths;
 }
 
-
-
 my $tarbin = 'tar';
-my $taropts = 'cf';
+my $taropts = 'cpf';
 my $tarext = '.tar';
 my $tarname = join(
         '-',"cpanbak", $^O ,DateTime->now->ymd('-'));
@@ -242,12 +276,15 @@ push @exclude_pattern, File::Spec->join( $ENV{HOME} , '.cpanm' , 'work' );
 push @exclude_pattern, '*.pod' if $opt_skip_pods;
 push @exclude_pattern, '*.pm3' if $opt_skip_manpages;
 
-
 $tarexclude .= join ' ' ,map { qq| --exclude "$_"| } @exclude_pattern;
 
 if ($opt_gzip) {
     $taropts .= 'z';
     $tarext .= '.gz';
+}
+elsif( $opt_bzip ) {
+    $taropts .= 'j';
+    $tarext .= '.bz2';
 }
 
 my $tarfilename = $filename || ($tarname . $tarext);
@@ -296,9 +333,11 @@ cpanbaker - backup your cpan module files.
 
     --exclude part,...
             don't backup ...
+            valid part names are minicpan, bin, local-lib, perlbrew, libs
 
     --include part,...
-            include ...
+            backup include ...
+            valid part names are minicpan, bin, local-lib, perlbrew, libs
 
     --dry
             dry run. do not archive files.
@@ -322,9 +361,12 @@ cpanbaker - backup your cpan module files.
             very verbose message
 
     -z, --gz
-            gzip compress
+            tar with gzip compression.
 
-    -d
+    -j, --bz
+            tar with bzip2 compression.
+
+    -d, --debug
             debug mode.
 
     -h
@@ -363,6 +405,10 @@ To exclude minicpan stuff:
 To exclude minicpan and perlbrew:
 
     $ cpanbaker --exclude=perlbrew,minicpan
+
+To backup perlbrew stuff only:
+
+    $ cpanbaker --include=perlbrew
 
 Verbose mode:
 
